@@ -1,6 +1,6 @@
-import React from 'react';
-import PostCard from './PostCard';
-import { UserPost } from './UserPost';
+import React from "react";
+import PostCard from "./PostCard";
+import { UserPost } from "./UserPost";
 
 function Exercise() {
   return (
