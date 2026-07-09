@@ -16,12 +16,14 @@ import {
   expensesStatistics
 } from '../data';
 
-import { goalService } from '../services/dataService';
+import { goalService, billService } from '../services/dataService';
 import { AuthContext } from '../context/authContext';
 import AppSnackbar from '../components/Elements/AppSnackbar';
 
 function Dashboard() {
   const [goals, setGoals] = useState({});
+  const [bills, setBills] = useState([]);
+  const [loadingBills, setLoadingBills] = useState(true);
   const { logout } = useContext(AuthContext);
 
   const [snackbar, setSnackbar] = useState({
@@ -50,8 +52,25 @@ function Dashboard() {
     }
   };
 
+ const fetchBills = async () => {
+    setLoadingBills(true);
+    try {
+      const data = await billService();
+      console.log('Bills data:', data);
+      setBills(data || []);
+    } catch (err) {
+      console.error("Gagal mengambil data bills:", err);
+      if (err.status === 401) {
+        logout();
+      }
+    } finally {
+      setLoadingBills(false);
+    }
+  };
+
   useEffect(() => {
     fetchGoals();
+    fetchBills();
   }, []);
   
   console.log(goals);
@@ -67,7 +86,7 @@ function Dashboard() {
             <CardGoal data={goals} />
           </div>
           <div className="sm:col-span-4">
-            <CardUpcomingBill data={bills} />
+            <CardUpcomingBill data={loadingBills ? [] : bills} />
           </div>
           <div className="sm:col-span-4 sm:row-span-2">
             <CardRecentTransaction data={transactions} />
@@ -91,4 +110,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard
+export default Dashboard;

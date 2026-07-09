@@ -7,10 +7,15 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { ThemeContext } from "../../context/themeContext";
 import { AuthContext } from "../../context/authContext";
 import { logoutService } from "../../services/authService";
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+import ThemeToggle from "../Elements/ThemeToggle";
 
 function MainLayout(props) {
   const { children } = props;
   const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(false);
 
   const themes = [
     { name: "theme-green", bgcolor: "bg-[#299D91]", color: "#299D91" },
@@ -39,21 +44,33 @@ function MainLayout(props) {
 
   const { user, logout } = useContext(AuthContext);
   
-  	  const handleLogout = async () => {
+  const handleLogout = async () => {
+    setLoading(true);
     try {
       await logoutService();
-      logout(); 
+      logout();
       navigate("/login");
     } catch (err) {
       console.error(err);
-      if (err.status === 401) {
-        logout();
-      }
+      logout();
+      navigate("/login");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <div className="flex flex-col items-center">
+          <CircularProgress color="inherit" />
+          <span className="mt-4 text-white text-sm font-medium">Logging Out...</span>
+        </div>
+      </Backdrop>
+
       <div className={`flex min-h-screen ${theme.name}`}>
         <aside className="bg-defaultBlack w-28 sm:w-64 text-special-bg2 flex flex-col justify-between px-7 py-12">
           <div>
@@ -80,15 +97,18 @@ function MainLayout(props) {
             </nav>
           </div>
           <div>
-            Themes
-            <div className="flex flex-col sm:flex-row gap-2 items-center">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm text-gray-400">Themes</span>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 items-start">
               {themes.map((t) => (
                 <div
                   key={t.name}
-                  className={`${t.bgcolor} w-6 h-6 rounded-md cursor-pointer mb-2`}
+                  className={`${t.bgcolor} w-6 h-6 rounded-md cursor-pointer`}
                   onClick={() => setTheme(t)}
                 ></div>
               ))}
+              <ThemeToggle />
             </div>
           </div>
           <div>
@@ -104,7 +124,7 @@ function MainLayout(props) {
             <div className="flex justify-between items-center">
               <div>Avatar</div>
               <div className="hidden sm:block">
-                <div>{user.name}</div>
+                <div>{user?.name || "User"}</div>
                 <div>View Profile</div>
               </div>
               <div className="hidden sm:block">
@@ -116,7 +136,7 @@ function MainLayout(props) {
         <div className="bg-special-mainBg flex-1 flex flex-col">
           <header className="border border-b border-gray-05 px-6 py-7 flex justify-between items-center">
             <div className="flex items-center">
-              <div className="font-bold text-2xl me-6">{user.name}</div>
+              <div className="font-bold text-2xl me-6">{user?.name || "User"}</div>
               <div className="text-gray-03 flex">
                 <Icon.ChevronRight size={20} />
                 <span>May 19, 2023</span>

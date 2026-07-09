@@ -7,6 +7,7 @@ import BalancePage from './pages/balance';
 import { createBrowserRouter, Navigate, Link, RouterProvider } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "./context/authContext";
+import ExpensesPage from "./pages/expense";
 
 function App() {
   const { user } = useContext(AuthContext);
@@ -50,6 +51,14 @@ function App() {
       element: (
         <RequireAuth>
           <BalancePage />
+        </RequireAuth>
+      ),
+    },
+    {
+      path: "/expense",
+      element: (
+        <RequireAuth>
+          <ExpensesPage />
         </RequireAuth>
       ),
     },
